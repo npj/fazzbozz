@@ -1,6 +1,30 @@
 #!/usr/bin/env runhaskell
 
-main = mapM (putStrLn . fazzbozz) [1..20]
+import Options.Applicative
+import Data.Semigroup ((<>))
+
+data Options = Options { number :: Int }
+
+options :: Parser Options
+options = Options
+  <$> option auto (
+        long "number" <>
+        short 'n' <>
+        help "number of values to output" <>
+        showDefault <>
+        value 20 )
+
+opts = info (options <**> helper) (
+        fullDesc <>
+        progDesc "Print fizzbuzz numbers" <>
+        header "fazzbozz - an overengineered fizzbuzz" )
+
+main = printFazzbozz =<< execParser opts
+
+printFazzbozz :: Options -> IO ()
+printFazzbozz (Options n) = do
+  mapM (putStrLn . fazzbozz) [1..n]
+  return ()
 
 fazzbozz :: Int -> String
 fazzbozz val
