@@ -10,8 +10,7 @@ parseCmdLine args =
   case result of
       Success opts -> Just opts
       otherwise -> Nothing
-    where result = execParserPure defaultPrefs optParseInfo args 
-
+    where result = execParserPure defaultPrefs opts args
 
 optionsTests = test [
     "no args" ~: parseCmdLine [] ~?= Just CmdOptions {number = 20},

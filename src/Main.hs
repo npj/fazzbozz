@@ -1,10 +1,9 @@
-import Data.Semigroup ((<>))
 import Options.Applicative
 
 import Fazzbozz
 import CmdOptions
 
-main = printFazzbozz =<< execParser optParseInfo
+main = printFazzbozz =<< execParser opts
 
 printFazzbozz :: CmdOptions -> IO ()
 printFazzbozz (CmdOptions n) = do

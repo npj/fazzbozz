@@ -1,12 +1,12 @@
-module CmdOptions (CmdOptions(..), parseOptions, optParseInfo) where
+module CmdOptions (CmdOptions(..), cmdOptions, opts) where
 
 import Options.Applicative
 import Data.Semigroup ((<>))
 
 data CmdOptions = CmdOptions { number :: Int } deriving (Show, Eq)
 
-parseOptions :: Parser CmdOptions
-parseOptions = CmdOptions
+cmdOptions :: Parser CmdOptions
+cmdOptions = CmdOptions
   <$> option auto (
         long "number" <>
         short 'n' <>
@@ -14,8 +14,8 @@ parseOptions = CmdOptions
         showDefault <>
         value 20 )
 
-optParseInfo :: ParserInfo CmdOptions
-optParseInfo = info (parseOptions <**> helper) (
+opts :: ParserInfo CmdOptions
+opts = info (cmdOptions <**> helper) (
         fullDesc <>
         progDesc "Print fizzbuzz numbers" <>
         header "fazzbozz - an overengineered fizzbuzz" )
