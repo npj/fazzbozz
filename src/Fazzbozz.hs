@@ -1,15 +1,17 @@
 module Fazzbozz (fazzbozz, simpleMatch) where
 
-simpleMatch :: Int -> String -> Int -> Maybe String
+type Match = Int -> Maybe String
+
+simpleMatch :: Int -> String -> Match
 simpleMatch count label n
   | n `mod` count == 0 = Just label
   | otherwise = Nothing
 
-fazzbozz :: [Int -> Maybe String] -> Int -> String
+fazzbozz :: [Match] -> Int -> String
 fazzbozz matches val =
   case matchLabels of
     [] -> show val
-    otherwise -> foldr1 (++) matchLabels
+    otherwise -> concat matchLabels
   where
     matchLabels = labels matches
 

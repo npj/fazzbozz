@@ -16,6 +16,5 @@ printFazzbozz (CmdOptions n patterns) = printFazzbozz' n patterns
 
 printFazzbozz' :: Int -> [Pattern] -> IO ()
 printFazzbozz' n patterns = do
-    mapM (putStrLn . fazzbozz (map match patterns)) [1..n]
-    return ()
+    mapM_ (putStrLn . fazzbozz (map match patterns)) [1..n]
   where match (Pattern count label) = simpleMatch count label
