@@ -1,5 +1,7 @@
 module Fazzbozz (fazzbozz, simpleMatch) where
 
+import Data.Maybe
+
 type Match = Int -> Maybe String
 
 simpleMatch :: Int -> String -> Match
@@ -8,9 +10,4 @@ simpleMatch count label n
   | otherwise = Nothing
 
 fazzbozz :: [Match] -> Int -> String
-fazzbozz matches val =
-  case maybeMatches of
-    Nothing -> show val
-    Just matchString -> matchString
-  where
-    maybeMatches = mconcat matches val
+fazzbozz matches = fromMaybe <$> show <*> mconcat matches
