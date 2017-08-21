@@ -3,16 +3,7 @@ import Options.Applicative
 import Fazzbozz
 import CmdOptions
 
-main = execParser opts >>= fmap printFazzbozz fillDefaultPatterns
-
-defaultPatterns = [
-    Pattern 3 "fazz",
-    Pattern 5 "bozz"
-  ]
-
-fillDefaultPatterns :: CmdOptions -> CmdOptions
-fillDefaultPatterns (CmdOptions n []) = CmdOptions n defaultPatterns
-fillDefaultPatterns (CmdOptions n p) = CmdOptions n p
+main = execParser opts >>= printFazzbozz
 
 printFazzbozz :: CmdOptions -> IO ()
 printFazzbozz (CmdOptions n patterns) = do

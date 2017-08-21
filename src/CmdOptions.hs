@@ -24,7 +24,7 @@ cmdOptions = CmdOptions
         help "number of values to output" <>
         showDefault <>
         value 20 )
-  <*> (many $ option readPattern (
+  <*> (fmap fillDefaultPatterns $ many $ option readPattern (
         long "pattern" <>
         short 'p' <>
         help "show a label at some frequency" <>
@@ -46,6 +46,14 @@ parsePattern opt =
   where
     (rawCount, rawLabel) = break (':' ==) opt
     maybeCount = readMaybe rawCount
+
+defaultPatterns = [
+    Pattern 3 "fazz",
+    Pattern 5 "bozz"
+  ]
+
+fillDefaultPatterns [] = defaultPatterns
+fillDefaultPatterns p = p
 
 opts :: ParserInfo CmdOptions
 opts = info (cmdOptions <**> helper) (
