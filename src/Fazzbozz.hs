@@ -9,14 +9,8 @@ simpleMatch count label n
 
 fazzbozz :: [Match] -> Int -> String
 fazzbozz matches val =
-  case matchLabels of
-    [] -> show val
-    otherwise -> concat matchLabels
+  case maybeMatches of
+    Nothing -> show val
+    Just matchString -> matchString
   where
-    matchLabels = labels matches
-
-    labels [] = []
-    labels (match : matches) =
-      case match val of
-        Just label -> label : labels matches
-        Nothing -> labels matches
+    maybeMatches = mconcat matches val
