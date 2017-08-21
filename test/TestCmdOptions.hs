@@ -6,11 +6,7 @@ import Options.Applicative
 import CmdOptions
 
 parseCmdLine :: [String] -> Maybe CmdOptions
-parseCmdLine args =
-  case result of
-      Success opts -> Just opts
-      otherwise -> Nothing
-    where result = execParserPure defaultPrefs opts args
+parseCmdLine = getParseResult <$> execParserPure defaultPrefs opts
 
 optionsTests = test [
     "no args" ~: parseCmdLine [] ~?= Just CmdOptions {
