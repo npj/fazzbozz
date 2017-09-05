@@ -1,12 +1,25 @@
-module Fazzbozz (fazzbozz, simpleMatch) where
+module Fazzbozz (
+  fazzbozz,
+  patternParsers,
+  parseCountPattern
+) where
 
-import Control.Monad
 import Data.Maybe
+import Text.Read
 
-type Match = Int -> Maybe String
-
-simpleMatch :: Int -> String -> Match
-simpleMatch count label n = label <$ guard (n `mod` count == 0)
+import Matching
 
 fazzbozz :: [Match] -> Int -> String
 fazzbozz matches = fromMaybe <$> show <*> mconcat matches
+
+-- parsers
+
+patternParsers :: [[String] -> [Match]]
+patternParsers = [parseCountPattern]
+
+parseCountPattern :: [String] -> [Match]
+parseCountPattern [rawCount, label] =
+  case readMaybe rawCount of
+    Just count -> [simpleMatch count label]
+    Nothing -> []
+parseCountPattern _ = []

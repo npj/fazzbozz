@@ -1,62 +1,59 @@
 module CmdOptions (
     CmdOptions(..),
-    cmdOptions,
-    Pattern(..),
-    parsePattern,
-    opts
+    makeOpts,
+    PatternParser
   ) where
 
 import Data.Semigroup ((<>))
-import Text.Read
 
+import Data.List.Split (splitOn)
 import Options.Applicative
+import Text.Read (readMaybe)
+
+import Matching
+
+type PatternParser = [String] -> [Match]
 
 data CmdOptions = CmdOptions {
     number :: Int,
-    patterns :: [Pattern]
-  } deriving (Show, Eq)
+    matches :: [Match]
+  }
 
-cmdOptions :: Parser CmdOptions
-cmdOptions = CmdOptions
-  <$> option auto (
-        long "number" <>
-        short 'n' <>
-        help "number of values to output" <>
-        showDefault <>
-        value 20 )
-  <*> (fmap fillDefaultPatterns $ many $ option readPattern (
-        long "pattern" <>
-        short 'p' <>
-        help "show a label at some frequency" <>
-        metavar "FREQ:LABEL" ))
+makeCmdOptions :: [PatternParser] -> [Match] -> Parser CmdOptions
+makeCmdOptions patterns defaultMatches = CmdOptions
+    <$> option auto (
+          long "number" <>
+          short 'n' <>
+          help "number of values to output" <>
+          showDefault <>
+          value 20 )
+    <*> (fmap fillDefaultMatches $ many $ option readPattern (
+          long "pattern" <>
+          short 'p' <>
+          help "show a label on some pattern" <>
+          metavar "PAT:LABEL" ))
+  where fillDefaultMatches = fillDefaults defaultMatches
+        readPattern = makePatternReader patterns
 
-data Pattern = Pattern {
-    count :: Int,
-    label :: String
-  } deriving (Show, Eq)
+fillDefaults :: [a] -> [a] -> [a]
+fillDefaults defaults [] = defaults
+fillDefaults _ p = p
 
-readPattern :: ReadM Pattern
-readPattern = eitherReader parsePattern
+makePatternReader :: [PatternParser] -> ReadM Match
+makePatternReader patterns = eitherReader $ parseOption patterns
 
-parsePattern :: String -> Either String Pattern
-parsePattern opt =
-  case (maybeCount, rawLabel) of
-    (Just count, ':' : label) -> Right (Pattern count label)
-    otherwise -> Left "Pattern must be FREQ:LABEL"
+parseOption :: [PatternParser] -> String -> Either String Match
+parseOption patternParsers opt =
+  case matches of
+    match : _ -> Right match
+    [] -> Left "Pattern must be PAT:LABEL"
   where
-    (rawCount, rawLabel) = break (':' ==) opt
-    maybeCount = readMaybe rawCount
+    patternArguments = splitOn ":" opt
+    matches = mconcat $ patternParsers <*> [patternArguments]
 
-defaultPatterns = [
-    Pattern 3 "fazz",
-    Pattern 5 "bozz"
-  ]
-
-fillDefaultPatterns [] = defaultPatterns
-fillDefaultPatterns p = p
-
-opts :: ParserInfo CmdOptions
-opts = info (cmdOptions <**> helper) (
-        fullDesc <>
-        progDesc "Print fizzbuzz numbers" <>
-        header "fazzbozz - an overengineered fizzbuzz" )
+makeOpts :: [PatternParser] -> [Match] -> ParserInfo CmdOptions
+makeOpts patterns defaultMatches = 
+  info (makeCmdOptions patterns defaultMatches <**> helper) (
+      fullDesc <>
+      progDesc "Print fizzbuzz numbers" <>
+      header "fazzbozz - an overengineered fizzbuzz" )

@@ -1,11 +1,20 @@
+import Data.Maybe
 import Options.Applicative
+import Text.Read
 
-import Fazzbozz
 import CmdOptions
+import Fazzbozz
+import Matching
 
 main = execParser opts >>= printFazzbozz
+  where opts = makeOpts patternParsers defaultMatches
+
+defaultMatches :: [Match]
+defaultMatches = [
+    simpleMatch 3 "fazz",
+    simpleMatch 5 "bozz"
+  ]
 
 printFazzbozz :: CmdOptions -> IO ()
-printFazzbozz (CmdOptions n patterns) = do
-    mapM_ (putStrLn . fazzbozz (map match patterns)) [1..n]
-  where match (Pattern count label) = simpleMatch count label
+printFazzbozz (CmdOptions n matches) =
+    mapM_ (putStrLn . fazzbozz matches) [1..n]

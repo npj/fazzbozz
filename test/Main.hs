@@ -1,12 +1,16 @@
 import System.Exit
 import Test.HUnit
 
-import TestFazzbozz
 import TestCmdOptions
+import TestFazzbozz
+import TestMatching
+import TestIntegration
 
 suite = test [
+    "options" ~: optionsTests,
     "fazzbozz" ~: fazzbozzTests,
-    "options" ~: optionsTests
+    "matching" ~: matchingTests,
+    "integration" ~: integrationTests
   ]
 
 main = do
