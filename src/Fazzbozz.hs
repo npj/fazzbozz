@@ -1,10 +1,13 @@
 module Fazzbozz (
   fazzbozz,
   patternParsers,
-  parseCountPattern
+  parseCountPattern,
+  parseFibonacciPattern
 ) where
 
+import Control.Monad
 import Data.Maybe
+
 import Text.Read
 
 import Matching
@@ -12,14 +15,25 @@ import Matching
 fazzbozz :: [Match] -> Int -> String
 fazzbozz matches = fromMaybe <$> show <*> mconcat matches
 
+-- parser utils
+
+type PatternParser = [String] -> [Match]
+
+parseSimplePattern :: (String -> Maybe t) -> (t -> String -> Match) -> PatternParser
+parseSimplePattern parseName makeMatch args = do
+  [rawName, label] <- return args
+  Just val <- return $ parseName rawName
+  return $ makeMatch val label
+
+parseNamedPattern :: String -> (String -> Match) -> PatternParser
+parseNamedPattern name match = parseSimplePattern (guard <$> (== name)) (const match)
+
 -- parsers
 
-patternParsers :: [[String] -> [Match]]
-patternParsers = [parseCountPattern]
+patternParsers :: [PatternParser]
+patternParsers = [parseCountPattern, parseFibonacciPattern]
 
-parseCountPattern :: [String] -> [Match]
-parseCountPattern [rawCount, label] =
-  case readMaybe rawCount of
-    Just count -> [simpleMatch count label]
-    Nothing -> []
-parseCountPattern _ = []
+parseCountPattern :: PatternParser
+parseCountPattern = parseSimplePattern readMaybe simpleMatch
+
+parseFibonacciPattern = parseNamedPattern "fib" matchFibonacci

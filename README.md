@@ -36,4 +36,14 @@ foobar
 ...
 19
 foo
+$ fazzbozz -p fib:foo -p 5:bar
+foo
+foo
+foo
+4
+foobar
+6
+...
+19
+bar
 ```

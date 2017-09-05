@@ -32,7 +32,17 @@ parseCountPatternTests = [
     "fail parse: too many args" ~: (length $ parseCountPattern ["2", "foo", "bar"]) ~=? 0
   ]
 
+parseFibonacciPatternTests = [
+    "parse and positive match" ~: do [match] <- return $ parseFibonacciPattern ["fib", "foo"]
+                                     match 3 @=? Just "foo",
+    "parse and negative match" ~: do [match] <- return $ parseFibonacciPattern ["fib", "foo"]
+                                     match 4 @=? Nothing,
+
+    "fail parse: bad label" ~: (length $ parseCountPattern ["fob", "foo"]) ~=? 0
+  ]
+
 fazzbozzTests = [
     "fazzbozz function" ~: fazzbozzFunctionTests,
-    "parseCountPattern" ~: parseCountPatternTests
+    "parseCountPattern" ~: parseCountPatternTests,
+    "parseFibonacciPattern" ~: parseFibonacciPatternTests
   ]
