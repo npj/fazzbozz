@@ -1,9 +1,8 @@
 module CmdOptions (
     CmdOptions(..),
-    MatchSpecifier(..),
-    opts,
-    parseCountPattern,
-    parseFibonacciPattern
+    MatchSpecifier,
+    MatchPredicateSpecifier(..),
+    opts
   ) where
 
 import Control.Monad
@@ -13,10 +12,11 @@ import Options.Applicative
 import Text.Read (readMaybe)
 
 type PatternParser = [String] -> [MatchSpecifier]
+type MatchSpecifier = (String, MatchPredicateSpecifier)
 
-data MatchSpecifier =
-  ModuloMatch Int String |
-  FibonacciMatch String
+data MatchPredicateSpecifier =
+  ModuloPredicate Int |
+  FibonacciPredicate
   deriving (Show, Eq)
 
 data CmdOptions = CmdOptions {
@@ -46,8 +46,8 @@ fillDefaultMatchSpecs p = p
 
 defaultMatchSpecs :: [MatchSpecifier]
 defaultMatchSpecs = [
-    ModuloMatch 3 "fazz",
-    ModuloMatch 5 "bozz"
+    ("fazz", ModuloPredicate 3),
+    ("bozz", ModuloPredicate 5)
   ]
 
 parseOption :: String -> Either String MatchSpecifier
@@ -67,17 +67,15 @@ opts = info (cmdOptions <**> helper) (
 
 -- parser utils
 
-parseSimplePattern :: (String -> Maybe t) -> (t -> String -> MatchSpecifier) -> PatternParser
-parseSimplePattern parseName makeMatchSpec args = do
+parseSimplePattern :: (String -> Maybe t) -> (t -> MatchPredicateSpecifier) -> PatternParser
+parseSimplePattern parseName makeMatchPred args = do
   [rawName, label] <- return args
   Just val <- return $ parseName rawName
-  return $ makeMatchSpec val label
+  return $ (label, makeMatchPred val)
 
-parseNamedPattern :: String -> (String -> MatchSpecifier) -> PatternParser
-parseNamedPattern name makeMatchSpec = parseSimplePattern parseName _makeMatchSpec
-  where
-    parseName = guard <$> (== name)
-    _makeMatchSpec = const makeMatchSpec
+parseNamedPattern :: String -> MatchPredicateSpecifier -> PatternParser
+parseNamedPattern name matchPred = parseSimplePattern parseName $ const matchPred
+  where parseName = guard <$> (== name)
 
 -- parsers
 
@@ -85,7 +83,7 @@ patternParsers :: [PatternParser]
 patternParsers = [parseCountPattern, parseFibonacciPattern]
 
 parseCountPattern :: PatternParser
-parseCountPattern = parseSimplePattern readMaybe ModuloMatch
+parseCountPattern = parseSimplePattern readMaybe ModuloPredicate
 
 parseFibonacciPattern :: PatternParser
-parseFibonacciPattern = parseNamedPattern "fib" FibonacciMatch
+parseFibonacciPattern = parseNamedPattern "fib" FibonacciPredicate

@@ -9,10 +9,11 @@ main = execParser opts >>= printFazzbozz
 
 printFazzbozz :: CmdOptions -> IO ()
 printFazzbozz (CmdOptions n matchSpecs) =
-    mapM_ (putStrLn . fazzbozz matches) [1..n]
+    mapM_ (putStrLn . fazzbozz matchLPs) [1..n]
     where
-      matches = map toMatch matchSpecs
+      matchLPs = map toLabeledPredicate matchSpecs
+      toLabeledPredicate (label, spec) = (label, toPredicate spec)
 
-toMatch :: MatchSpecifier -> Match
-toMatch (ModuloMatch i s) = matchModulo i s
-toMatch (FibonacciMatch s) = matchFibonacci s
+toPredicate :: MatchPredicateSpecifier -> MatchPredicate
+toPredicate (ModuloPredicate i) = isModulo i
+toPredicate FibonacciPredicate = isFibonacci

@@ -6,10 +6,6 @@ import Test.HUnit
 import Fazzbozz
 import CmdOptions
 
-neverMatch _ = Nothing
-alwaysFoo _ = Just "foo"
-evenBar n = "bar" <$ guard (even n)
-
 fazzbozzFunctionTests = [
     "no matches" ~: fazzbozz [] 1 ~=? "1",
     "trivial negative match" ~: fazzbozz [neverMatch] 1 ~=? "1",
@@ -21,15 +17,19 @@ fazzbozzFunctionTests = [
 
     "multiple positive matches" ~: fazzbozz [alwaysFoo, evenBar] 2 ~=? "foobar"
   ]
+  where
+    neverMatch = ("x", const False)
+    alwaysFoo = ("foo", const True)
+    evenBar = ("bar", even)
 
 moduloTests = [
-    "positive" ~: matchModulo 3 "foo" 6 ~=? Just "foo",
-    "negative" ~: matchModulo 3 "foo" 5 ~=? Nothing
+    "positive" ~: isModulo 3 6 ~=? True,
+    "negative" ~: isModulo 3 5 ~=? False
   ]
 
 fibonacciTests = [
-    "positive" ~: matchFibonacci "foo" 21 ~=? Just "foo",
-    "negative" ~: matchFibonacci "foo" 20 ~=? Nothing
+    "positive" ~: isFibonacci 21 ~=? True,
+    "negative" ~: isFibonacci 20 ~=? False
   ]
 
 fazzbozzTests = [

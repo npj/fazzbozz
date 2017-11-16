@@ -21,18 +21,18 @@ numberTest = [
   where test = runTest number
 
 patternsTest = [
-    test "default patterns" [] $ Just [ModuloMatch 3 "fazz", ModuloMatch 5 "bozz"],
+    test "default patterns" [] $ Just [("fazz", ModuloPredicate 3), ("bozz", ModuloPredicate 5)],
 
-    test "modulo pattern" ["-p", "2:test"] $ Just [ModuloMatch 2 "test"],
+    test "modulo pattern" ["-p", "2:test"] $ Just [("test", ModuloPredicate 2)],
     test "modulo missing label" ["-p", "2"] Nothing,
     test "modulo extra args" ["-p", "2:a:b"] Nothing,
 
-    test "fibonacci pattern" ["-p", "fib:test"] $ Just [FibonacciMatch "test"],
+    test "fibonacci pattern" ["-p", "fib:test"] $ Just [("test", FibonacciPredicate)],
     test "fibonacci missing label" ["-p", "fib"] Nothing,
     test "fibonacci extra args" ["-p", "fib:a:b"] Nothing,
 
     test "multiple patterns" ["-p", "2:a", "-p", "fib:b"] $
-      Just [ModuloMatch 2 "a", FibonacciMatch "b"],
+      Just [("a", ModuloPredicate 2), ("b", FibonacciPredicate)],
     test "invalid pattern type" ["-p", "x:test"] Nothing
   ]
   where test = runTest matchSpecs
