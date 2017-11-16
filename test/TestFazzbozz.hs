@@ -4,6 +4,7 @@ import Control.Monad
 import Test.HUnit
 
 import Fazzbozz
+import CmdOptions
 
 neverMatch _ = Nothing
 alwaysFoo _ = Just "foo"
@@ -21,28 +22,18 @@ fazzbozzFunctionTests = [
     "multiple positive matches" ~: fazzbozz [alwaysFoo, evenBar] 2 ~=? "foobar"
   ]
 
-parseCountPatternTests = [
-    "parse and positive match" ~: do [match] <- return $ parseCountPattern ["2", "foo"]
-                                     match 2 @=? Just "foo",
-    "parse and negative match" ~: do [match] <- return $ parseCountPattern ["2", "foo"]
-                                     match 3 @=? Nothing,
-
-    "fail parse: nonnumeric" ~: (length $ parseCountPattern ["two", "foo"]) ~=? 0,
-    "fail parse: not enough args" ~: (length $ parseCountPattern ["2"]) ~=? 0,
-    "fail parse: too many args" ~: (length $ parseCountPattern ["2", "foo", "bar"]) ~=? 0
+moduloTests = [
+    "positive" ~: matchModulo 3 "foo" 6 ~=? Just "foo",
+    "negative" ~: matchModulo 3 "foo" 5 ~=? Nothing
   ]
 
-parseFibonacciPatternTests = [
-    "parse and positive match" ~: do [match] <- return $ parseFibonacciPattern ["fib", "foo"]
-                                     match 3 @=? Just "foo",
-    "parse and negative match" ~: do [match] <- return $ parseFibonacciPattern ["fib", "foo"]
-                                     match 4 @=? Nothing,
-
-    "fail parse: bad label" ~: (length $ parseCountPattern ["fob", "foo"]) ~=? 0
+fibonacciTests = [
+    "positive" ~: matchFibonacci "foo" 21 ~=? Just "foo",
+    "negative" ~: matchFibonacci "foo" 20 ~=? Nothing
   ]
 
 fazzbozzTests = [
-    "fazzbozz function" ~: fazzbozzFunctionTests,
-    "parseCountPattern" ~: parseCountPatternTests,
-    "parseFibonacciPattern" ~: parseFibonacciPatternTests
+    "fazzbozz" ~: fazzbozzFunctionTests,
+    "modulo" ~: moduloTests,
+    "fibonacci" ~: fibonacciTests
   ]

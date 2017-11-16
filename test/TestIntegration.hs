@@ -5,17 +5,13 @@ import Options.Applicative
 
 import CmdOptions
 import Fazzbozz
-import Matching
 
-
-defaultMatches = [
-    simpleMatch 3 "fazz",
-    simpleMatch 5 "bozz"
-  ]
-opts = makeOpts patternParsers defaultMatches
-parseCmdLine = getParseResult <$> execParserPure defaultPrefs opts
-
-fazzbozzForOptions (CmdOptions n matches) = map (fazzbozz matches) [1..n]
+parseCmdLine = getParseResult . execParserPure defaultPrefs opts
+fazzbozzForOptions (CmdOptions n matchSpecs) = map (fazzbozz matches) [1..n]
+  where
+    matches = map toMatch matchSpecs
+    toMatch (ModuloMatch i s) = matchModulo i s
+    toMatch (FibonacciMatch s) = matchFibonacci s
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
 
 integrationTests = [
@@ -33,7 +29,6 @@ integrationTests = [
             "11", "12", "foo", "14", "15", "16", "17", "18", "19", "20"],
     "multiple patterns" ~: fazzbozzForArgs ["-n", "10", "-p", "3:foo", "-p", "2:bar"] ~=?
       Just ["1", "bar", "foo", "bar", "5", "foobar", "7", "bar", "foo", "bar"],
-
 
     "invalid arg: bad option" ~: fazzbozzForArgs ["-x"] ~=? Nothing,
     "invalid arg: bad count" ~: fazzbozzForArgs ["-n", "twenty"] ~=? Nothing,

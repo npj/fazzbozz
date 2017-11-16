@@ -1,39 +1,29 @@
 module Fazzbozz (
   fazzbozz,
-  patternParsers,
-  parseCountPattern,
-  parseFibonacciPattern
+  Match,
+  matchModulo,
+  matchFibonacci
 ) where
 
 import Control.Monad
 import Data.Maybe
 
-import Text.Read
-
-import Matching
+type Match = Int -> Maybe String
 
 fazzbozz :: [Match] -> Int -> String
 fazzbozz matches = fromMaybe <$> show <*> mconcat matches
 
--- parser utils
+liftMatch :: (Int -> Bool) -> String -> Match
+liftMatch p label n = label <$ guard (p n)
 
-type PatternParser = [String] -> [Match]
+matchModulo :: Int -> String -> Match
+matchModulo count = liftMatch $ (== 0) <$> (`mod` count)
 
-parseSimplePattern :: (String -> Maybe t) -> (t -> String -> Match) -> PatternParser
-parseSimplePattern parseName makeMatch args = do
-  [rawName, label] <- return args
-  Just val <- return $ parseName rawName
-  return $ makeMatch val label
+memberOfOrderedList :: (Eq a, Ord a) => [a] -> a -> Bool
+memberOfOrderedList ls n = n `elem` takeWhile (<= n) ls
 
-parseNamedPattern :: String -> (String -> Match) -> PatternParser
-parseNamedPattern name match = parseSimplePattern (guard <$> (== name)) (const match)
+fibs :: [Int]
+fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
 
--- parsers
-
-patternParsers :: [PatternParser]
-patternParsers = [parseCountPattern, parseFibonacciPattern]
-
-parseCountPattern :: PatternParser
-parseCountPattern = parseSimplePattern readMaybe simpleMatch
-
-parseFibonacciPattern = parseNamedPattern "fib" matchFibonacci
+matchFibonacci :: String -> Match
+matchFibonacci = liftMatch $ memberOfOrderedList fibs

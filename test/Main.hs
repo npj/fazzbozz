@@ -3,13 +3,11 @@ import Test.HUnit
 
 import TestCmdOptions
 import TestFazzbozz
-import TestMatching
 import TestIntegration
 
 suite = test [
     "options" ~: optionsTests,
     "fazzbozz" ~: fazzbozzTests,
-    "matching" ~: matchingTests,
     "integration" ~: integrationTests
   ]
 

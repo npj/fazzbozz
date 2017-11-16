@@ -1,49 +1,57 @@
 module CmdOptions (
     CmdOptions(..),
-    makeOpts,
-    PatternParser
+    MatchSpecifier(..),
+    opts,
+    parseCountPattern,
+    parseFibonacciPattern
   ) where
 
-import Data.Semigroup ((<>))
-
+import Control.Monad
 import Data.List.Split (splitOn)
+import Data.Semigroup ((<>))
 import Options.Applicative
 import Text.Read (readMaybe)
 
-import Matching
+type PatternParser = [String] -> [MatchSpecifier]
 
-type PatternParser = [String] -> [Match]
+data MatchSpecifier =
+  ModuloMatch Int String |
+  FibonacciMatch String
+  deriving (Show, Eq)
 
 data CmdOptions = CmdOptions {
     number :: Int,
-    matches :: [Match]
+    matchSpecs :: [MatchSpecifier]
   }
 
-makeCmdOptions :: [PatternParser] -> [Match] -> Parser CmdOptions
-makeCmdOptions patterns defaultMatches = CmdOptions
+cmdOptions :: Parser CmdOptions
+cmdOptions = CmdOptions
     <$> option auto (
           long "number" <>
           short 'n' <>
           help "number of values to output" <>
           showDefault <>
           value 20 )
-    <*> (fmap fillDefaultMatches $ many $ option readPattern (
+    <*> (fmap fillDefaultMatchSpecs $ many $ option readOption (
           long "pattern" <>
           short 'p' <>
           help "show a label on some pattern" <>
           metavar "PAT:LABEL" ))
-  where fillDefaultMatches = fillDefaults defaultMatches
-        readPattern = makePatternReader patterns
+  where readOption = eitherReader $ parseOption
 
-fillDefaults :: [a] -> [a] -> [a]
-fillDefaults defaults [] = defaults
-fillDefaults _ p = p
+-- This is almost certainly done for us in a library somewhere
+fillDefaultMatchSpecs :: [MatchSpecifier] -> [MatchSpecifier]
+fillDefaultMatchSpecs [] = defaultMatchSpecs
+fillDefaultMatchSpecs p = p
 
-makePatternReader :: [PatternParser] -> ReadM Match
-makePatternReader patterns = eitherReader $ parseOption patterns
+defaultMatchSpecs :: [MatchSpecifier]
+defaultMatchSpecs = [
+    ModuloMatch 3 "fazz",
+    ModuloMatch 5 "bozz"
+  ]
 
-parseOption :: [PatternParser] -> String -> Either String Match
-parseOption patternParsers opt =
+parseOption :: String -> Either String MatchSpecifier
+parseOption opt =
   case matches of
     match : _ -> Right match
     [] -> Left "Pattern must be PAT:LABEL"
@@ -51,9 +59,33 @@ parseOption patternParsers opt =
     patternArguments = splitOn ":" opt
     matches = mconcat $ patternParsers <*> [patternArguments]
 
-makeOpts :: [PatternParser] -> [Match] -> ParserInfo CmdOptions
-makeOpts patterns defaultMatches = 
-  info (makeCmdOptions patterns defaultMatches <**> helper) (
-      fullDesc <>
-      progDesc "Print fizzbuzz numbers" <>
-      header "fazzbozz - an overengineered fizzbuzz" )
+opts :: ParserInfo CmdOptions
+opts = info (cmdOptions <**> helper) (
+          fullDesc <>
+          progDesc "Print fizzbuzz numbers" <>
+          header "fazzbozz - an overengineered fizzbuzz" )
+
+-- parser utils
+
+parseSimplePattern :: (String -> Maybe t) -> (t -> String -> MatchSpecifier) -> PatternParser
+parseSimplePattern parseName makeMatchSpec args = do
+  [rawName, label] <- return args
+  Just val <- return $ parseName rawName
+  return $ makeMatchSpec val label
+
+parseNamedPattern :: String -> (String -> MatchSpecifier) -> PatternParser
+parseNamedPattern name makeMatchSpec = parseSimplePattern parseName _makeMatchSpec
+  where
+    parseName = guard <$> (== name)
+    _makeMatchSpec = const makeMatchSpec
+
+-- parsers
+
+patternParsers :: [PatternParser]
+patternParsers = [parseCountPattern, parseFibonacciPattern]
+
+parseCountPattern :: PatternParser
+parseCountPattern = parseSimplePattern readMaybe ModuloMatch
+
+parseFibonacciPattern :: PatternParser
+parseFibonacciPattern = parseNamedPattern "fib" FibonacciMatch

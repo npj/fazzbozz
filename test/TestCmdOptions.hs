@@ -5,45 +5,39 @@ import Options.Applicative
 
 import CmdOptions
 
-makeCmdLineParser :: ParserInfo CmdOptions -> [String] -> Maybe CmdOptions
-makeCmdLineParser opts = getParseResult <$> execParserPure defaultPrefs opts
+parseCmdLine :: [String] -> Maybe CmdOptions
+parseCmdLine = getParseResult <$> execParserPure defaultPrefs opts
 
-minimalOptionsTest = 
-  let parseCmdLine = makeCmdLineParser $ makeOpts [] []
-  in [
-    "default number" ~: number <$> parseCmdLine [] ~=? Just 20,
-    "specify number" ~: number <$> parseCmdLine ["-n", "100"] ~=? Just 100,
+runTest :: (Eq t, Show t) => (CmdOptions -> t) -> String -> [String] -> Maybe t -> Test
+runTest field name cmdLine expect = name ~: field <$> parseCmdLine cmdLine ~=? expect
 
-    "default matches" ~: length . matches <$> parseCmdLine [] ~=? Just 0,
-    -- parseCmdLine actually returns Nothing here, but Maybe CmdOptions
-    -- isn't in Eq, so we can't ~=? it. we fmap (length . matches) just to
-    -- get something in Eq
-    "reject all patterns" ~: length . matches <$> parseCmdLine ["-p", "2:foo"] ~=? Nothing
+numberTest = [
+    test "default number" [] $ Just 20,
+    test "specify number" ["-n", "100"] $ Just 100,
+
+    test "invalid number" ["-n", "one hundred"] Nothing,
+    test "missing number" ["-n"] Nothing
   ]
+  where test = runTest number
 
-defaultMatchesTest =
-  let parseCmdLine = makeCmdLineParser $ makeOpts [] [testMatch]
-      testMatch _ = Just "TEST"
-  in [
-    "default matches" ~: do Just ms <- return $ matches <$> parseCmdLine []
-                            ms <*> [1] @=? [Just "TEST"]
-  ]
+patternsTest = [
+    test "default patterns" [] $ Just [ModuloMatch 3 "fazz", ModuloMatch 5 "bozz"],
 
-patternParseTest =
-  let parseCmdLine = makeCmdLineParser $ makeOpts [parseTestMatch] []
-      parseTestMatch ["test", val] = [\_ -> Just val]
-      parseTestMatch _ = []
-  in [
-    "parsed matches" ~: do Just ms <- return $ matches <$> parseCmdLine ["-p", "test:foo"]
-                           ms <*> [1] @=? [Just "foo"],
-    -- Here again parseCmdLine returns Nothing, but Maybe CmdOptions isn't
-    -- in Eq, so we can't ~=? it. We fmap (length . matches) just to get
-    -- something in Eq
-    "unparseable pattern" ~: length . matches <$> parseCmdLine ["-p", "2:foo"] ~=? Nothing
+    test "modulo pattern" ["-p", "2:test"] $ Just [ModuloMatch 2 "test"],
+    test "modulo missing label" ["-p", "2"] Nothing,
+    test "modulo extra args" ["-p", "2:a:b"] Nothing,
+
+    test "fibonacci pattern" ["-p", "fib:test"] $ Just [FibonacciMatch "test"],
+    test "fibonacci missing label" ["-p", "fib"] Nothing,
+    test "fibonacci extra args" ["-p", "fib:a:b"] Nothing,
+
+    test "multiple patterns" ["-p", "2:a", "-p", "fib:b"] $
+      Just [ModuloMatch 2 "a", FibonacciMatch "b"],
+    test "invalid pattern type" ["-p", "x:test"] Nothing
   ]
+  where test = runTest matchSpecs
 
 optionsTests = [
-    "minimal options" ~: minimalOptionsTest,
-    "default matches" ~: defaultMatchesTest,
-    "pattern parsing" ~: patternParseTest
+    "number" ~: numberTest,
+    "patterns" ~: patternsTest
   ]

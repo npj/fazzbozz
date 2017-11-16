@@ -4,17 +4,15 @@ import Text.Read
 
 import CmdOptions
 import Fazzbozz
-import Matching
 
 main = execParser opts >>= printFazzbozz
-  where opts = makeOpts patternParsers defaultMatches
-
-defaultMatches :: [Match]
-defaultMatches = [
-    simpleMatch 3 "fazz",
-    simpleMatch 5 "bozz"
-  ]
 
 printFazzbozz :: CmdOptions -> IO ()
-printFazzbozz (CmdOptions n matches) =
+printFazzbozz (CmdOptions n matchSpecs) =
     mapM_ (putStrLn . fazzbozz matches) [1..n]
+    where
+      matches = map toMatch matchSpecs
+
+toMatch :: MatchSpecifier -> Match
+toMatch (ModuloMatch i s) = matchModulo i s
+toMatch (FibonacciMatch s) = matchFibonacci s
