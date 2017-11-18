@@ -7,15 +7,12 @@ import CmdOptions
 import Fazzbozz
 
 parseCmdLine = getParseResult . execParserPure defaultPrefs opts
-fazzbozzForOptions (CmdOptions n matchSpecs) = map (fazzbozz matchLPs) [1..n]
-  where
-    matchLPs = map toLP matchSpecs
-    toLP (s, p) = (s, toPredicate p)
-
-    toPredicate :: MatchPredicateSpecifier -> MatchPredicate
-    toPredicate (ModuloPredicate i) = isModulo i
-    toPredicate FibonacciPredicate = isFibonacci
+fazzbozzForOptions (CmdOptions n matchSpecs) = map (mfazzbozz matchSpecs) [1..n]
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
+
+instance Matchable MatchPredicateSpecifier where
+  match (ModuloPredicate i) = isModulo i
+  match FibonacciPredicate = isFibonacci
 
 integrationTests = [
     "default args" ~: fazzbozzForArgs [] ~=?
