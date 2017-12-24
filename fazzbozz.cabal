@@ -10,20 +10,42 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+source-repository head
+  type: git
+  location: https://github.com/epilanthanomai/fazzbozz
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  exposed-modules:
+      Fazzbozz
+  default-language: Haskell2010
+
 executable fazzbozz
-  hs-source-dirs:      src
+  hs-source-dirs:      app
   main-is:             Main.hs
-  build-depends:       base >=4.9 && <5,
+  build-depends:       base >=4.7 && <5,
+                       fazzbozz,
                        optparse-applicative,
                        split
   default-language:    Haskell2010
+  other-modules:
+    CmdOptions
 
 test-suite test-fazzbozz
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      test, src
-  main-is:             Main.hs
-  build-depends:       base >=4.9 && <5,
+  hs-source-dirs:      test, app
+  main-is:             Spec.hs
+  build-depends:       base >=4.7 && <5,
+                       fazzbozz,
                        HUnit,
                        optparse-applicative,
                        split
   default-language:    Haskell2010
+  other-modules:
+    CmdOptions
+    TestCmdOptions
+    TestFazzbozz
+    TestIntegration
