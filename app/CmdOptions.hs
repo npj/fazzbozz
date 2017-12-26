@@ -11,20 +11,20 @@ import Data.Semigroup ((<>))
 import Options.Applicative
 import Text.Read (readMaybe)
 
-type PatternParser = [String] -> [MatchSpecifier]
-type MatchSpecifier = (String, MatchPredicateSpecifier)
+type PatternParser n = [String] -> [MatchSpecifier n]
+type MatchSpecifier n = (String, MatchPredicateSpecifier n)
 
-data MatchPredicateSpecifier =
-  ModuloPredicate Int |
+data MatchPredicateSpecifier n =
+  ModuloPredicate n |
   FibonacciPredicate
   deriving (Show, Eq)
 
-data CmdOptions = CmdOptions {
-    number :: Int,
-    matchSpecs :: [MatchSpecifier]
+data CmdOptions n = CmdOptions {
+    number :: n,
+    matchSpecs :: [MatchSpecifier n]
   }
 
-cmdOptions :: Parser CmdOptions
+cmdOptions :: (Integral n, Read n, Show n) => Parser (CmdOptions n)
 cmdOptions = CmdOptions
     <$> option auto (
           long "number" <>
@@ -37,20 +37,20 @@ cmdOptions = CmdOptions
           short 'p' <>
           help "show a label on some pattern" <>
           metavar "PAT:LABEL" ))
-  where readOption = eitherReader $ parseOption
+  where readOption = eitherReader parseOption
 
 -- This is almost certainly done for us in a library somewhere
-fillDefaultMatchSpecs :: [MatchSpecifier] -> [MatchSpecifier]
+fillDefaultMatchSpecs :: Integral n => [MatchSpecifier n] -> [MatchSpecifier n]
 fillDefaultMatchSpecs [] = defaultMatchSpecs
 fillDefaultMatchSpecs p = p
 
-defaultMatchSpecs :: [MatchSpecifier]
+defaultMatchSpecs :: Integral n => [MatchSpecifier n]
 defaultMatchSpecs = [
     ("fazz", ModuloPredicate 3),
     ("bozz", ModuloPredicate 5)
   ]
 
-parseOption :: String -> Either String MatchSpecifier
+parseOption :: (Integral n, Read n) => String -> Either String (MatchSpecifier n)
 parseOption opt =
   case matches of
     match : _ -> Right match
@@ -59,7 +59,7 @@ parseOption opt =
     patternArguments = splitOn ":" opt
     matches = mconcat $ patternParsers <*> [patternArguments]
 
-opts :: ParserInfo CmdOptions
+opts :: (Integral n, Read n, Show n) => ParserInfo (CmdOptions n)
 opts = info (cmdOptions <**> helper) (
           fullDesc <>
           progDesc "Print fizzbuzz numbers" <>
@@ -67,23 +67,23 @@ opts = info (cmdOptions <**> helper) (
 
 -- parser utils
 
-parseSimplePattern :: (String -> Maybe t) -> (t -> MatchPredicateSpecifier) -> PatternParser
+parseSimplePattern :: (String -> Maybe t) -> (t -> MatchPredicateSpecifier n) -> PatternParser n
 parseSimplePattern parseName makeMatchPred args = do
   [rawName, label] <- return args
   Just val <- return $ parseName rawName
   return $ (label, makeMatchPred val)
 
-parseNamedPattern :: String -> MatchPredicateSpecifier -> PatternParser
+parseNamedPattern :: String -> MatchPredicateSpecifier n -> PatternParser n
 parseNamedPattern name matchPred = parseSimplePattern parseName $ const matchPred
   where parseName = guard <$> (== name)
 
 -- parsers
 
-patternParsers :: [PatternParser]
+patternParsers :: (Read n, Integral n) => [PatternParser n]
 patternParsers = [parseCountPattern, parseFibonacciPattern]
 
-parseCountPattern :: PatternParser
+parseCountPattern :: (Read n, Integral n) => PatternParser n
 parseCountPattern = parseSimplePattern readMaybe ModuloPredicate
 
-parseFibonacciPattern :: PatternParser
+parseFibonacciPattern :: PatternParser n
 parseFibonacciPattern = parseNamedPattern "fib" FibonacciPredicate

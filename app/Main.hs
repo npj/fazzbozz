@@ -7,10 +7,13 @@ import Fazzbozz
 
 main = execParser opts >>= printFazzbozz
 
-printFazzbozz :: CmdOptions -> IO ()
+printFazzbozz :: (Integral n, Show n) => CmdOptions n -> IO ()
 printFazzbozz (CmdOptions n matchSpecs) =
-    mapM_ (putStrLn . mfazzbozz matchSpecs) [1..n]
+    mapM_ (putStrLn . fazzbozz matches) [1..n]
+    where
+      matches = mapSnd toMatch matchSpecs
+      mapSnd f = map (\(a, b) -> (a, f b))
 
-instance Matchable MatchPredicateSpecifier where
-  match (ModuloPredicate i) = isModulo i
-  match FibonacciPredicate = isFibonacci
+toMatch :: (Integral n) => MatchPredicateSpecifier n -> Match n
+toMatch (ModuloPredicate i) = isModulo i
+toMatch FibonacciPredicate = isFibonacci

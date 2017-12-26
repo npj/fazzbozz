@@ -5,10 +5,10 @@ import Options.Applicative
 
 import CmdOptions
 
-parseCmdLine :: [String] -> Maybe CmdOptions
+parseCmdLine :: (Integral n, Read n, Show n) => [String] -> Maybe (CmdOptions n)
 parseCmdLine = getParseResult <$> execParserPure defaultPrefs opts
 
-runTest :: (Eq t, Show t) => (CmdOptions -> t) -> String -> [String] -> Maybe t -> Test
+runTest :: (Eq t, Show t, Integral n, Read n, Show n) => (CmdOptions n -> t) -> String -> [String] -> Maybe t -> Test
 runTest field name cmdLine expect = name ~: field <$> parseCmdLine cmdLine ~=? expect
 
 numberTest = [
