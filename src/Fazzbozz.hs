@@ -1,61 +1,108 @@
 module Fazzbozz (
   fazzbozz,
   sfazzbozz,
+
+  SimpleMatcher,
+  StatefulMatcher,
+  ChainingMatcher(..),
+  BoundMatcher(..),
+
+  makeStateful,
+  makeChaining,
+  chainSimpleMatcher,
+  bindLabel,
+  bindSimpleMatcher,
+  matchTogether,
   statefulScan,
-  voidState,
 
   isModulo,
+  moduloMatcher,
+
   isFibonacci,
   fibs,
-  bindFibonacci,
-
-  StatelessMatcher,
-  StatefulMatcher,
-  BoundMatcher(..)
+  fibonacciMatcher,
 ) where
 
 import Control.Monad
 import Data.Maybe
 
-type StatelessMatcher a = a -> Bool
-type StatefulMatcher ps a = ps -> a -> (ps, Bool)
+-- core fazzbozz logic, in state-passing and simplified stateless forms
 
-data BoundMatcher ps a = BoundMatcher {
-    matchName :: String,
-    matchUpdate :: StatefulMatcher ps a,
-    matchState :: ps
-  }
-
-feedMatcher :: BoundMatcher ps a -> a -> (BoundMatcher ps a, Bool)
-feedMatcher m val = (m { matchState = newState }, isMatch)
-  where (newState, isMatch) = (matchUpdate m) (matchState m) val
-
-sfazzbozz :: Show a => [BoundMatcher ps a] -> a -> ([BoundMatcher ps a], String)
-sfazzbozz matchers val = (newMatchers, resultStr)
+fazzbozz :: Show a => [(String, SimpleMatcher a)] -> a -> String
+fazzbozz preds = snd . sfazzbozz matcher
   where
-    (newMatchers, matchResults) = unzip $ map runMatch matchers
-    runMatch bmatcher = fmap addLabel $ feedMatcher bmatcher val
-      where addLabel isMatch = matchName bmatcher <$ guard isMatch
-    resultStr = fromMaybe (show val) $ mconcat matchResults
+    matcher = matchTogether $ map (uncurry bindSimpleMatcher) preds
+    makeMatcher (label, matcher) = bindSimpleMatcher label matcher
 
-statefulScan :: (st -> a -> (st, b)) -> st -> [a] -> [b]
-statefulScan f istate [] = []
-statefulScan f istate (val : vals) = result : statefulScan f newstate vals
-  where (newstate, result) = f istate val
-
-fazzbozz :: Show a => [(String, StatelessMatcher a)] -> a -> String
-fazzbozz preds = snd . sfazzbozz spreds
+sfazzbozz :: Show a => BoundMatcher a -> a -> (BoundMatcher a, String)
+sfazzbozz matcher val = (nextMatcher, fazzResult)
   where
-    spreds = map bindState preds
-    bindState (s, m) = BoundMatcher s (voidState m) ()
+    (nextMatcher, boundResult) = nextBoundMatch matcher val
+    fazzResult = fromMaybe (show val) boundResult
 
-voidState :: StatelessMatcher a -> StatefulMatcher st a
-voidState pred s val = (s, pred val)
+-- types and functions for statefully evaluating numbers for fazzbozz
+-- pattern matching. I bet once I really grok monads this section will
+-- mostly melt away.
+
+type SimpleMatcher a = a -> Bool
+type StatefulMatcher st a = st -> a -> (st, Bool)
+
+newtype ChainingMatcher a = ChainingMatcher {
+  nextMatch :: a -> (ChainingMatcher a, Bool)
+}
+
+newtype BoundMatcher a = BoundMatcher {
+  nextBoundMatch :: a -> (BoundMatcher a, Maybe String)
+}
+
+makeStateful :: SimpleMatcher a -> StatefulMatcher () a
+makeStateful m () a = ((), m a)
+
+makeChaining :: StatefulMatcher st a -> st -> ChainingMatcher a
+makeChaining smatcher initState = ChainingMatcher $ chain initState
+  where
+    chain state val = (nextChain, result)
+      where
+        (nextState, result) = smatcher state val
+        nextChain = ChainingMatcher $ chain nextState
+
+chainSimpleMatcher :: SimpleMatcher a -> ChainingMatcher a
+chainSimpleMatcher matcher = (makeChaining . makeStateful) matcher ()
+
+bindLabel :: String -> ChainingMatcher a  -> BoundMatcher a
+bindLabel label cmatcher = BoundMatcher $ bnext cmatcher
+  where
+    bnext chain val = (nextBound, boundResult)
+      where
+        (nextChain, chainResult) = nextMatch chain val
+        nextBound = BoundMatcher $ bnext nextChain
+        boundResult = label <$ guard chainResult
+
+bindSimpleMatcher :: String -> SimpleMatcher a -> BoundMatcher a
+bindSimpleMatcher label matcher = bindLabel label $ (makeChaining . makeStateful) matcher ()
+
+matchTogether :: [BoundMatcher a] -> BoundMatcher a
+matchTogether matchers = BoundMatcher $ bnext matchers
+  where
+    bnext matchers val = (nextMatcher, concatResult)
+      where
+        matchResults = map (\m -> nextBoundMatch m val) matchers
+        (nextMatchers, stringResults) = unzip matchResults
+        nextMatcher = BoundMatcher $ bnext nextMatchers
+        concatResult = mconcat stringResults
+
+statefulScan :: (a -> b -> (a, c)) -> a -> [b] -> [c]
+statefulScan f init [] = []
+statefulScan f init (val : vals) = result : statefulScan f newMatcher vals
+  where (newMatcher, result) = f init val
 
 -- matches
 
 isModulo :: Integral a => a -> a -> Bool
 isModulo count = (== 0) <$> (`mod` count)
+
+moduloMatcher :: Integral a => a -> ChainingMatcher a
+moduloMatcher count = chainSimpleMatcher $ isModulo count
 
 dropElem :: Ord a => [a] -> a -> ([a], Bool)
 dropElem ns n
@@ -69,5 +116,11 @@ fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
 isFibonacci :: (Ord a, Num a) => a -> Bool
 isFibonacci n = snd $ dropElem fibs n
 
-bindFibonacci :: (Num n, Ord n) => String -> BoundMatcher [n] n
-bindFibonacci label = BoundMatcher label dropElem fibs
+fibonacciMatcher :: (Ord a, Num a) => ChainingMatcher a
+fibonacciMatcher = ChainingMatcher $ matchFibonacci fibs
+  where
+    matchFibonacci state val = (nextMatcher, result)
+      where
+        nextMatcher = ChainingMatcher $ matchFibonacci rest
+        (rest, result) = dropElem state val
+

@@ -9,9 +9,12 @@ main = execParser opts >>= printFazzbozz
 
 printFazzbozz :: (Integral n, Show n) => CmdOptions n -> IO ()
 printFazzbozz (CmdOptions n matchSpecs) =
-  mapM_ putStrLn $ statefulScan sfazzbozz matchers [1..n]
-    where matchers = map bindMatch matchSpecs
+  mapM_ putStrLn $ statefulScan sfazzbozz matcher [1..n]
+    where matcher = matchTogether $ map (uncurry bindMatch) matchSpecs
 
-bindMatch :: (Integral n) => (String, MatchPredicateSpecifier n) -> BoundMatcher [n] n
-bindMatch (label, (ModuloPredicate i)) = BoundMatcher label (voidState $ isModulo i) []
-bindMatch (label, FibonacciPredicate) = bindFibonacci label
+bindMatch :: (Integral n) => String -> MatchPredicateSpecifier n -> BoundMatcher n
+bindMatch label spec = bindLabel label $ makeMatcher spec
+
+makeMatcher :: (Integral n) => MatchPredicateSpecifier n -> ChainingMatcher n
+makeMatcher (ModuloPredicate i) = moduloMatcher i
+makeMatcher (FibonacciPredicate) = fibonacciMatcher

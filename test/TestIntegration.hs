@@ -7,13 +7,16 @@ import CmdOptions
 import Fazzbozz
 
 parseCmdLine = getParseResult . execParserPure defaultPrefs opts
-fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz matchers [1..n]
-  where matchers = map bindMatch matchSpecs
+fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz matcher [1..n]
+  where matcher = matchTogether $ map (uncurry bindMatch) matchSpecs
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
 
-bindMatch :: (Integral n) => (String, MatchPredicateSpecifier n) -> BoundMatcher [n] n
-bindMatch (label, (ModuloPredicate i)) = BoundMatcher label (voidState $ isModulo i) []
-bindMatch (label, FibonacciPredicate) = bindFibonacci label
+bindMatch :: (Integral n) => String -> MatchPredicateSpecifier n -> BoundMatcher n
+bindMatch label spec = bindLabel label $ makeMatcher spec
+
+makeMatcher :: (Integral n) => MatchPredicateSpecifier n -> ChainingMatcher n
+makeMatcher (ModuloPredicate i) = moduloMatcher i
+makeMatcher (FibonacciPredicate) = fibonacciMatcher
 
 integrationTests = [
     "default args" ~: fazzbozzForArgs [] ~=?
