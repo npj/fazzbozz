@@ -16,7 +16,8 @@ type MatchSpecifier n = (String, MatchPredicateSpecifier n)
 
 data MatchPredicateSpecifier n =
   ModuloPredicate n |
-  FibonacciPredicate
+  FibonacciPredicate |
+  HappyPredicate
   deriving (Show, Eq)
 
 data CmdOptions n = CmdOptions {
@@ -80,10 +81,13 @@ parseNamedPattern name matchPred = parseSimplePattern parseName $ const matchPre
 -- parsers
 
 patternParsers :: (Read n, Integral n) => [PatternParser n]
-patternParsers = [parseCountPattern, parseFibonacciPattern]
+patternParsers = [parseCountPattern, parseFibonacciPattern, parseHappyPattern]
 
 parseCountPattern :: (Read n, Integral n) => PatternParser n
 parseCountPattern = parseSimplePattern readMaybe ModuloPredicate
 
 parseFibonacciPattern :: PatternParser n
 parseFibonacciPattern = parseNamedPattern "fib" FibonacciPredicate
+
+parseHappyPattern :: PatternParser n
+parseHappyPattern = parseNamedPattern "happy" HappyPredicate

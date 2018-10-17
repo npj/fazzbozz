@@ -46,9 +46,17 @@ fibonacciTests = [
     "negative" ~: isFibonacci 20 ~=? False
   ]
 
+happyTests = [
+    "default positive" ~: isHappy 1 ~=? True,
+    "default negative" ~: isHappy 4 ~=? False,
+    "accumulated positive" ~: isHappy 7 ~=? True,
+    "accumulated negative" ~: isHappy 8 ~=? False
+  ]
+
 fazzbozzTests = [
     "fazzbozz" ~: fazzbozzFunctionTests,
     "statefulScan" ~: statefulScanTests,
     "modulo" ~: moduloTests,
-    "fibonacci" ~: fibonacciTests
+    "fibonacci" ~: fibonacciTests,
+    "happy" ~: happyTests
   ]

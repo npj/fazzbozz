@@ -21,10 +21,15 @@ module Fazzbozz (
   isFibonacci,
   fibs,
   fibonacciMatcher,
+
+  isHappy,
+  happyMatcher,
 ) where
 
 import Control.Monad
 import Data.Maybe
+
+import qualified Data.Map as Map
 
 -- core fazzbozz logic, in state-passing and simplified stateless forms
 
@@ -96,13 +101,19 @@ statefulScan f init [] = []
 statefulScan f init (val : vals) = result : statefulScan f newMatcher vals
   where (newMatcher, result) = f init val
 
+--
 -- matches
+--
+
+-- modulo
 
 isModulo :: Integral a => a -> a -> Bool
 isModulo count = (== 0) <$> (`mod` count)
 
 moduloMatcher :: Integral a => a -> ChainingMatcher a
 moduloMatcher count = chainSimpleMatcher $ isModulo count
+
+-- fibonacci
 
 dropElem :: Ord a => [a] -> a -> ([a], Bool)
 dropElem ns n
@@ -123,4 +134,43 @@ fibonacciMatcher = ChainingMatcher $ matchFibonacci fibs
       where
         nextMatcher = ChainingMatcher $ matchFibonacci rest
         (rest, result) = dropElem state val
+
+-- happy
+
+type HappyState a = Map.Map a Bool
+
+testHappy :: Integral a => HappyState a -> a -> (HappyState a, Bool)
+testHappy state val = _testHappy cached state val
+  where
+    cached = Map.lookup val state
+    _testHappy (Just result) state _ = (state, result)
+    _testHappy Nothing state val = (nextState, result)
+      where
+        (recurseState, result) = testHappy state $ nextHappy val
+        nextState = Map.insert val result recurseState
+
+nextHappy :: Integral a => a -> a
+nextHappy = sum . map square . digits 10
+  where square n = n * n
+
+digits :: Integral a => a -> a -> [a]
+digits _ 0 = []
+digits base n = digit : rest
+  where
+    (nextn, digit) = n `divMod` base
+    rest = digits base nextn
+
+defaultHappyState :: (Num a, Ord a) => HappyState a
+defaultHappyState = Map.fromList [(1, True), (4, False)]
+
+isHappy :: Integral a => a -> Bool
+isHappy val = snd $ testHappy defaultHappyState val
+
+happyMatcher :: Integral a => ChainingMatcher a
+happyMatcher = ChainingMatcher $ matchHappy defaultHappyState
+  where
+    matchHappy state val = (nextMatcher, result)
+      where
+        nextMatcher = ChainingMatcher $ matchHappy nextState
+        (nextState, result) = testHappy state val
 

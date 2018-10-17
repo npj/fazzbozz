@@ -31,6 +31,10 @@ patternsTest = [
     test "fibonacci missing label" ["-p", "fib"] Nothing,
     test "fibonacci extra args" ["-p", "fib:a:b"] Nothing,
 
+    test "happy pattern" ["-p", "happy:test"] $ Just [("test", HappyPredicate)],
+    test "happy missing label" ["-p", "happy"] Nothing,
+    test "happy extra args" ["-p", "happy:a:b"] Nothing,
+
     test "multiple patterns" ["-p", "2:a", "-p", "fib:b"] $
       Just [("a", ModuloPredicate 2), ("b", FibonacciPredicate)],
     test "invalid pattern type" ["-p", "x:test"] Nothing
