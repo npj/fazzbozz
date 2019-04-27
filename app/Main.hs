@@ -7,15 +7,14 @@ import Fazzbozz
 
 main = execParser opts >>= printFazzbozz
 
-printFazzbozz :: (Integral n, Show n) => CmdOptions n -> IO ()
+printFazzbozz :: CmdOptions Integer -> IO ()
 printFazzbozz (CmdOptions n matchSpecs) =
-  mapM_ putStrLn $ statefulScan sfazzbozz matcher [1..n]
-    where matcher = matchTogether $ map (uncurry bindMatch) matchSpecs
+  mapM_ putStrLn $ statefulScan sfazzbozz states [1..n]
+    where
+      states = map makeState' matchSpecs
+      makeState' (label, pred) = (makeState pred, label)
 
-bindMatch :: (Integral n) => String -> MatchPredicateSpecifier n -> BoundMatcher n
-bindMatch label spec = bindLabel label $ makeMatcher spec
-
-makeMatcher :: (Integral n) => MatchPredicateSpecifier n -> ChainingMatcher n
-makeMatcher (ModuloPredicate i) = moduloMatcher i
-makeMatcher FibonacciPredicate = fibonacciMatcher
-makeMatcher HappyPredicate = happyMatcher
+makeState :: MatchPredicateSpecifier Integer -> EnclosedState
+makeState (ModuloPredicate n) = enclose $ ModuloState n
+makeState FibonacciPredicate = enclose defaultFibonacciState
+makeState HappyPredicate = enclose defaultHappyState
