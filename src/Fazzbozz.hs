@@ -89,7 +89,7 @@ instance FazzState PredicateState where
 
 -- modulo
 
-newtype ModuloState = ModuloState Integer deriving (Show)
+newtype ModuloState = ModuloState Integer deriving (Eq, Show)
 
 isModulo :: Integral a => a -> a -> Bool
 isModulo count n = (n `mod` count) == 0
@@ -100,7 +100,7 @@ instance FazzState ModuloState where
 
 -- fibonacci
 
-newtype FibonacciState = FibonacciState [Integer] deriving (Show)
+newtype FibonacciState = FibonacciState [Integer] deriving (Eq, Show)
 
 isFibonacci :: (Ord a, Num a) => a -> Bool
 isFibonacci = snd . dropElem fibs
@@ -125,7 +125,7 @@ instance FazzState FibonacciState where
 
 -- happy
 
-newtype HappyState = HappyState (Map.Map Integer Bool) deriving (Show)
+newtype HappyState = HappyState (Map.Map Integer Bool) deriving (Eq, Show)
 
 isHappy :: Integer -> Bool
 isHappy = snd . matchHappy defaultHappyState
