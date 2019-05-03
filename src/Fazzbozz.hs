@@ -2,6 +2,7 @@ module Fazzbozz (
   fazzbozz,
   sfazzbozz,
 
+  LabeledState(..),
   FazzState(..),
   statefulScan,
 
@@ -33,16 +34,16 @@ fazzbozz :: [(String, Integer -> Bool)] -> Integer -> String
 fazzbozz preds = snd . sfazzbozz states
   where
     states = map makeState preds
-    makeState (label, pred) = (PredicateState pred, label)
+    makeState (label, pred) = LabeledState (PredicateState pred) label
 
-sfazzbozz :: FazzState s => [(s, String)] -> Integer -> ([(s, String)], String)
+sfazzbozz :: FazzState s => [LabeledState s] -> Integer -> ([LabeledState s], String)
 sfazzbozz ss n = mapSnd collectResults $ unzip $ fazzAll ss
   where
     collectResults = fromMaybe (show n) . mconcat
     fazzAll = map $ fazzWithLabel n
 
-fazzWithLabel :: FazzState s => Integer -> (s, String) -> ((s, String), Maybe String)
-fazzWithLabel n (s, label) = ((s', label), result)
+fazzWithLabel :: FazzState s => Integer -> LabeledState s -> (LabeledState s, Maybe String)
+fazzWithLabel n (LabeledState s label) = (LabeledState s' label, result)
   where
     (s', result) = mapSnd labelWhen $ matchFazz s n
     labelWhen maybeMatch = label <$ guard maybeMatch
@@ -60,6 +61,9 @@ statefulScan f init (val : vals) = result : statefulScan f newMatcher vals
   where (newMatcher, result) = f init val
 
 -- helpers
+
+type Label = String
+data LabeledState s = LabeledState s Label
 
 constState :: (a -> b -> c) -> a -> b -> (a, c)
 constState f s x = (s, f s x)

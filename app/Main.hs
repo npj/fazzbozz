@@ -12,7 +12,7 @@ printFazzbozz (CmdOptions n matchSpecs) =
   mapM_ putStrLn $ statefulScan sfazzbozz states [1..n]
     where
       states = map makeState' matchSpecs
-      makeState' (label, pred) = (makeState pred, label)
+      makeState' (label, pred) = LabeledState (makeState pred) label
 
 makeState :: MatchPredicateSpecifier Integer -> EnclosedState
 makeState (ModuloPredicate n) = enclose $ ModuloState n

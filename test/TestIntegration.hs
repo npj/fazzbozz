@@ -10,7 +10,7 @@ parseCmdLine = getParseResult . execParserPure defaultPrefs opts
 fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz states [1..n]
   where
     states = map makeState' matchSpecs
-    makeState' (label, pred) = (makeState pred, label)
+    makeState' (label, pred) = LabeledState (makeState pred) label
 
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
 
