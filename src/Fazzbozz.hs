@@ -23,6 +23,7 @@ module Fazzbozz (
 ) where
 
 import Control.Monad
+import Data.List
 import Data.Maybe
 import Data.Tuple
 
@@ -73,14 +74,6 @@ mapFst f (x, y) = (f x, y)
 
 mapSnd :: (b -> c) -> (a, b) -> (a, c)
 mapSnd f (x, y) = (x, f y)
-
-expandUntil :: (a -> (a, b)) -> (a -> Bool) -> a -> [b]
-expandUntil f done val
-  | done val = []
-  | otherwise =
-    let (val', result) = f val
-        rest = expandUntil f done val'
-    in result : rest
 
 --
 -- matches
@@ -142,7 +135,10 @@ nextHappy = sum . map square . digits 10
   where square n = n * n
 
 digits :: Integral a => a -> a -> [a]
-digits base = expandUntil (`divMod` base) (== 0)
+digits base = unfoldr $ digits' base
+  where
+    digits' _ 0 = Nothing
+    digits' base n = Just . swap $ n `divMod` base
 
 defaultHappyState :: HappyState
 defaultHappyState = HappyState $ Map.fromList [(1, True), (4, False)]
