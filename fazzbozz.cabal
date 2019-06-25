@@ -25,6 +25,7 @@ library
       Fazzbozz.Base
       Fazzbozz.Core
       Fazzbozz.Matches
+      Fazzbozz.Simple
   default-language: Haskell2010
 
 executable fazzbozz
@@ -52,5 +53,7 @@ test-suite test-fazzbozz
   other-modules:
     CmdOptions
     TestCmdOptions
-    TestFazzbozz
+    TestFazzbozzCore
+    TestFazzbozzMatches
+    TestFazzbozzSimple
     TestIntegration
