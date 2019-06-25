@@ -4,7 +4,9 @@ import Test.HUnit
 import Options.Applicative
 
 import CmdOptions
-import Fazzbozz
+
+import Fazzbozz.Core
+import Fazzbozz.Matches
 
 parseCmdLine = getParseResult . execParserPure defaultPrefs opts
 fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz states [1..n]

@@ -22,6 +22,9 @@ library
       containers
   exposed-modules:
       Fazzbozz
+      Fazzbozz.Base
+      Fazzbozz.Core
+      Fazzbozz.Matches
   default-language: Haskell2010
 
 executable fazzbozz

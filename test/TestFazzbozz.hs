@@ -5,8 +5,11 @@ import qualified Data.Map as Map
 
 import Test.HUnit
 
-import Fazzbozz
 import CmdOptions
+import Fazzbozz (fazzbozz)
+import Fazzbozz.Base
+import Fazzbozz.Core
+import Fazzbozz.Matches
 
 fazzbozzFunctionTests = [
     "no matches" ~: fazzbozz [] 1 ~=? "1",
