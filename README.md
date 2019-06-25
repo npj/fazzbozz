@@ -5,8 +5,8 @@ A platform for exploring haskell, mostly by vastly overengineering fizzbuzz.
 
 Usage:
 ```ShellSession
-$ cabal install
-$ fazzbozz
+$ stack build
+$ stack exec fazzbozz
 1
 2
 fazz
