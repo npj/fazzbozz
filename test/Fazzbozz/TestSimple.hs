@@ -1,4 +1,4 @@
-module TestFazzbozzSimple (fazzbozzSimpleTests) where
+module Fazzbozz.TestSimple (fazzbozzSimpleTests) where
 
 import Control.Monad
 import Test.HUnit

@@ -1,4 +1,4 @@
-module TestFazzbozzCore (fazzbozzCoreTests) where
+module Fazzbozz.TestCore (fazzbozzCoreTests) where
 
 import Test.HUnit
 
