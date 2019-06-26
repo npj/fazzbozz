@@ -5,6 +5,7 @@ module Fazzbozz (
   LabeledState(..),
   FazzState(..),
   statefulScan,
+  makeState,
 
   ModuloState(..),
   isModulo,

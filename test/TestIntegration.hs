@@ -6,6 +6,7 @@ import Options.Applicative
 import Fazzbozz.CmdOptions
 import Fazzbozz.Core
 import Fazzbozz.Matches
+import Fazzbozz.Simple
 
 parseCmdLine = getParseResult . execParserPure defaultPrefs opts
 fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz states [1..n]
@@ -14,11 +15,6 @@ fazzbozzForOptions (CmdOptions n matchSpecs) = statefulScan sfazzbozz states [1.
     makeState' (label, pred) = LabeledState (makeState pred) label
 
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
-
-makeState :: MatchPredicateSpecifier Integer -> EnclosedState
-makeState (ModuloPredicate n) = enclose $ ModuloState n
-makeState FibonacciPredicate = enclose defaultFibonacciState
-makeState HappyPredicate = enclose defaultHappyState
 
 integrationTests = [
     "default args" ~: fazzbozzForArgs [] ~=?
