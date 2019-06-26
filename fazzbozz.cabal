@@ -19,10 +19,13 @@ library
       src
   build-depends:
       base >=4.7 && <5,
-      containers
+      containers,
+      optparse-applicative,
+      split
   exposed-modules:
       Fazzbozz
       Fazzbozz.Base
+      Fazzbozz.CmdOptions
       Fazzbozz.Core
       Fazzbozz.Matches
       Fazzbozz.Simple
@@ -31,29 +34,26 @@ library
 executable fazzbozz
   hs-source-dirs:      app
   main-is:             Main.hs
-  build-depends:       base >=4.7 && <5,
-                       fazzbozz,
-                       optparse-applicative,
-                       split
+  build-depends:
+      base >=4.7 && <5,
+      fazzbozz,
+      optparse-applicative
   default-language:    Haskell2010
-  other-modules:
-    CmdOptions
 
 test-suite test-fazzbozz
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      test, app
+  hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       base >=4.7 && <5,
-                       fazzbozz,
-                       HUnit,
-                       optparse-applicative,
-                       split,
-                       containers
+  build-depends:
+      base >=4.7 && <5,
+      containers,
+      fazzbozz,
+      optparse-applicative,
+      HUnit
   default-language:    Haskell2010
   other-modules:
-    CmdOptions
-    Fazzbozz.TestCore
-    Fazzbozz.TestMatches
-    Fazzbozz.TestSimple
-    TestCmdOptions
-    TestIntegration
+      Fazzbozz.TestCmdOptions
+      Fazzbozz.TestCore
+      Fazzbozz.TestMatches
+      Fazzbozz.TestSimple
+      TestIntegration

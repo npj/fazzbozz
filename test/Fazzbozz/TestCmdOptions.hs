@@ -1,9 +1,9 @@
-module TestCmdOptions (optionsTests) where
+module Fazzbozz.TestCmdOptions (optionsTests) where
 
 import Test.HUnit
 import Options.Applicative
 
-import CmdOptions
+import Fazzbozz.CmdOptions
 
 parseCmdLine :: (Integral n, Read n, Show n) => [String] -> Maybe (CmdOptions n)
 parseCmdLine = getParseResult <$> execParserPure defaultPrefs opts

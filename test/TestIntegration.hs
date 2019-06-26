@@ -3,8 +3,8 @@ module TestIntegration (integrationTests) where
 import Test.HUnit
 import Options.Applicative
 
-import CmdOptions
 
+import Fazzbozz.CmdOptions
 import Fazzbozz.Core
 import Fazzbozz.Matches
 

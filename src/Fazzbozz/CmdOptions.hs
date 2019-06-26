@@ -1,4 +1,4 @@
-module CmdOptions (
+module Fazzbozz.CmdOptions (
     CmdOptions(..),
     MatchSpecifier,
     MatchPredicateSpecifier(..),

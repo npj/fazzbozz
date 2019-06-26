@@ -1,10 +1,10 @@
 import System.Exit
 import Test.HUnit
 
+import Fazzbozz.TestCmdOptions
 import Fazzbozz.TestCore
 import Fazzbozz.TestMatches
 import Fazzbozz.TestSimple
-import TestCmdOptions
 import TestIntegration
 
 suite = test [

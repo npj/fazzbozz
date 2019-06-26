@@ -2,8 +2,8 @@ import Data.Maybe
 import Options.Applicative
 import Text.Read
 
-import CmdOptions
 import Fazzbozz
+import Fazzbozz.CmdOptions
 
 main = execParser opts >>= printFazzbozz
 
