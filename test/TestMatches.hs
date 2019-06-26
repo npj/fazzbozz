@@ -1,4 +1,4 @@
-module Fazzbozz.TestMatches (fazzbozzMatchTests) where
+module TestMatches (fazzbozzMatchTests) where
 
 import qualified Data.Map as Map
 import Test.HUnit

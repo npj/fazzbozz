@@ -1,7 +1,6 @@
-module Fazzbozz.TestCore (fazzbozzCoreTests) where
+module TestCore (fazzbozzCoreTests) where
 
 import Test.HUnit
-
 import Fazzbozz.Core
 
 statefulScanTests = [

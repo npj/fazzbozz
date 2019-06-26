@@ -1,8 +1,7 @@
-module Fazzbozz.TestCmdOptions (optionsTests) where
+module TestCmdOptions (optionsTests) where
 
 import Test.HUnit
 import Options.Applicative
-
 import Fazzbozz.CmdOptions
 
 parseCmdLine :: (Integral n, Read n, Show n) => [String] -> Maybe (CmdOptions n)
