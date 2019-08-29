@@ -9,7 +9,7 @@ main = execParser opts >>= printFazzbozz
 
 printFazzbozz :: CmdOptions Integer -> IO ()
 printFazzbozz (CmdOptions n matchSpecs) =
-  mapM_ putStrLn $ statefulScan sfazzbozz states [1..n]
+  mapM_ putStrLn $ scanM sfazzbozz states [1..n]
     where
       states = map makeState' matchSpecs
       makeState' (label, pred) = LabeledState (makeState pred) label
