@@ -11,7 +11,7 @@ fazzbozz :: [(String, Integer -> Bool)] -> Integer -> String
 fazzbozz preds = fst . sfazzbozz states
   where
     states = map makeState preds
-    makeState (label, pred) = LabeledState (PredicateState pred) label
+    makeState (label, pred) = Labeled (PredicateState pred) label
 
 makeState :: MatchPredicateSpecifier Integer -> EnclosedState
 makeState (ModuloPredicate n) = enclose $ ModuloState n

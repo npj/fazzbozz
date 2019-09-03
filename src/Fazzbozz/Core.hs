@@ -1,7 +1,7 @@
 module Fazzbozz.Core (
   sfazzbozz,
   scanM,
-  LabeledState(..),
+  Labeled(..),
 ) where
 
 import Control.Monad
@@ -10,16 +10,16 @@ import Data.Maybe
 import Fazzbozz.Base
 
 type Label = String
-data LabeledState s = LabeledState s Label deriving (Eq, Show)
+data Labeled s = Labeled s Label deriving (Eq, Show)
 
-sfazzbozz :: FazzState s => [LabeledState s] -> Integer -> (String, [LabeledState s])
+sfazzbozz :: FazzState s => [Labeled s] -> Integer -> (String, [Labeled s])
 sfazzbozz ss n = mapFst collectResults $ unzip $ fazzAll ss
   where
     collectResults = fromMaybe (show n) . mconcat
     fazzAll = map $ fazzWithLabel n
 
-fazzWithLabel :: FazzState s => Integer -> LabeledState s -> (Maybe String, LabeledState s)
-fazzWithLabel n (LabeledState s label) = (result, LabeledState s' label)
+fazzWithLabel :: FazzState s => Integer -> Labeled s -> (Maybe String, Labeled s)
+fazzWithLabel n (Labeled s label) = (result, Labeled s' label)
   where
     (s', result) = mapSnd labelWhen $ matchFazz s n
     labelWhen maybeMatch = label <$ guard maybeMatch

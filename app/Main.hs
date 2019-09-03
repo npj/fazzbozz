@@ -12,4 +12,4 @@ printFazzbozz (CmdOptions n matchSpecs) =
   mapM_ putStrLn $ scanM sfazzbozz states [1..n]
     where
       states = map makeState' matchSpecs
-      makeState' (label, pred) = LabeledState (makeState pred) label
+      makeState' (label, pred) = Labeled (makeState pred) label
