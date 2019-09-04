@@ -5,7 +5,7 @@ module Fazzbozz.Base (
 ) where
 
 class FazzState s where
-  matchFazz :: s -> Integer -> (s, Bool)
+  matchFazz :: s -> Integer -> (Bool, s)
 
 mapFst :: (a -> c) -> (a, b) -> (c, b)
 mapFst f (x, y) = (f x, y)

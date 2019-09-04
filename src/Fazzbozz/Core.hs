@@ -18,7 +18,7 @@ sfazzbozz ss n = mapFst collectResults $ unzip $ fazzAll ss
     fazzAll = map $ fazzOne n
 
 fazzOne :: FazzState s => Integer -> (Label, s) -> (Maybe String, (Label, s))
-fazzOne n = swap . fmap labelToMaybe . dupFst . fmap (flip matchFazz $ n)
+fazzOne n = mapFst labelToMaybe . dupFst . fmap (flip matchFazz $ n)
 
 dupFst :: (a, (b, c)) -> ((a, b), (a, c))
 dupFst (a, (b, c)) = ((a, b), (a, c))

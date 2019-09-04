@@ -26,8 +26,8 @@ import Fazzbozz.Base
 
 -- helpers
 
-constState :: (a -> b -> c) -> a -> b -> (a, c)
-constState f s x = (s, f s x)
+constState :: (a -> b -> c) -> a -> b -> (c, a)
+constState f s x = (f s x, s)
 
 -- predicate
 
@@ -54,12 +54,12 @@ instance FazzState ModuloState where
 newtype FibonacciState = FibonacciState [Integer] deriving (Eq, Show)
 
 isFibonacci :: (Ord a, Num a) => a -> Bool
-isFibonacci = snd . dropElem fibs
+isFibonacci = fst . dropElem fibs
 
-dropElem :: Ord a => [a] -> a -> ([a], Bool)
+dropElem :: Ord a => [a] -> a -> (Bool, [a])
 dropElem ns n
-  | n' == n = (rest, True)
-  | otherwise = (ns', False)
+  | n' == n = (True, rest)
+  | otherwise = (False, ns')
   where ns'@(n':rest) = dropWhile (<n) ns
 
 fibs :: Num n => [n]
@@ -68,8 +68,8 @@ fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
 defaultFibonacciState :: FibonacciState
 defaultFibonacciState = FibonacciState fibs
 
-matchFibonacci :: FibonacciState -> Integer -> (FibonacciState, Bool)
-matchFibonacci (FibonacciState s) n = mapFst FibonacciState $ dropElem s n
+matchFibonacci :: FibonacciState -> Integer -> (Bool, FibonacciState)
+matchFibonacci (FibonacciState s) n = fmap FibonacciState $ dropElem s n
 
 instance FazzState FibonacciState where
   matchFazz = matchFibonacci
@@ -79,7 +79,7 @@ instance FazzState FibonacciState where
 newtype HappyState = HappyState (Map.Map Integer Bool) deriving (Eq, Show)
 
 isHappy :: Integer -> Bool
-isHappy = snd . matchHappy defaultHappyState
+isHappy = fst . matchHappy defaultHappyState
 
 nextHappy :: Integral a => a -> a
 nextHappy = sum . map square . digits 10
@@ -94,17 +94,17 @@ digits base = unfoldr $ digits' base
 defaultHappyState :: HappyState
 defaultHappyState = HappyState $ Map.fromList [(1, True), (4, False)]
 
-matchHappy :: HappyState -> Integer -> (HappyState, Bool)
-matchHappy (HappyState s) = mapFst HappyState . collectLookup nextHappy s
+matchHappy :: HappyState -> Integer -> (Bool, HappyState)
+matchHappy (HappyState s) = fmap HappyState . collectLookup nextHappy s
 
-collectLookup :: Ord a => (a -> a) -> Map.Map a b -> a -> (Map.Map a b, b)
+collectLookup :: Ord a => (a -> a) -> Map.Map a b -> a -> (b, Map.Map a b)
 collectLookup f m val = collectLookup' present m val
   where
     present = Map.lookup val m
-    collectLookup' (Just result) m _ = (m, result)
-    collectLookup' Nothing m val = (m', result)
+    collectLookup' (Just result) m _ = (result, m)
+    collectLookup' Nothing m val = (result, m')
       where
-        (m', result) = mapFst insertVal $ collectLookup f m $ f val
+        (result, m') = fmap insertVal $ collectLookup f m $ f val
         insertVal = Map.insert val result
 
 instance FazzState HappyState where
@@ -112,12 +112,12 @@ instance FazzState HappyState where
 
 -- enclosed
 
-newtype EnclosedState = EnclosedState (Integer -> (EnclosedState, Bool))
+newtype EnclosedState = EnclosedState (Integer -> (Bool, EnclosedState))
 
 enclose :: FazzState s => s -> EnclosedState
-enclose s = EnclosedState $ \n -> mapFst enclose $ matchFazz s n
+enclose s = EnclosedState $ \n -> fmap enclose $ matchFazz s n
 
-matchEnclosed :: EnclosedState -> Integer -> (EnclosedState, Bool)
+matchEnclosed :: EnclosedState -> Integer -> (Bool, EnclosedState)
 matchEnclosed (EnclosedState f) n = f n
 
 instance FazzState EnclosedState where
