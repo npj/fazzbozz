@@ -115,12 +115,7 @@ instance FazzState HappyState where
 newtype EnclosedState = EnclosedState (Integer -> (EnclosedState, Bool))
 
 enclose :: FazzState s => s -> EnclosedState
-enclose s = EnclosedState f
-  where
-    f n = (es', result)
-      where
-        (s', result) = matchFazz s n
-        es' = enclose s'
+enclose s = EnclosedState $ \n -> mapFst enclose $ matchFazz s n
 
 matchEnclosed :: EnclosedState -> Integer -> (EnclosedState, Bool)
 matchEnclosed (EnclosedState f) n = f n
