@@ -10,8 +10,7 @@ import Fazzbozz.Matches
 fazzbozz :: [(String, Integer -> Bool)] -> Integer -> String
 fazzbozz preds = fst . sfazzbozz states
   where
-    states = map makeState preds
-    makeState (label, pred) = Labeled (PredicateState pred) label
+    states = map (fmap PredicateState) preds
 
 makeState :: MatchPredicateSpecifier Integer -> EnclosedState
 makeState (ModuloPredicate n) = enclose $ ModuloState n

@@ -2,7 +2,6 @@ module Fazzbozz (
   fazzbozz,
   sfazzbozz,
 
-  Labeled(..),
   FazzState(..),
   scanM,
   makeState,

@@ -11,8 +11,7 @@ import Fazzbozz.Simple
 parseCmdLine = getParseResult . execParserPure defaultPrefs opts
 fazzbozzForOptions (CmdOptions n matchSpecs) = scanM sfazzbozz states [1..n]
   where
-    states = map makeState' matchSpecs
-    makeState' (label, pred) = Labeled (makeState pred) label
+    states = map (fmap makeState) matchSpecs
 
 fazzbozzForArgs args = fazzbozzForOptions <$> parseCmdLine args
 
